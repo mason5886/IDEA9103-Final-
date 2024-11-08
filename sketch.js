@@ -65,18 +65,19 @@ let roadMetrics = [
   ];
 
 //Arrays of different colored squares
-let redBlocks = [];       
+let redBlocks = [];      
 let yellowBlocks = [];   
-let blueBlocks = [];     
-let grayBlocks = []; 
-//Define canvas and audio related variables  
-let canvas;               
-let audio;  
-//Play and Pause   
-let button; 
-let ampArray = [];   
-//For storing spectrum analysis data   
-let fft; 
+let blueBlocks = [];      
+let grayBlocks = [];  
+//Define canvas and audio related variables    
+let canvas;   
+let audio;      
+//Play and Pause        
+let button;         
+//For storing spectrum analysis data      
+let ampArray = [];        
+
+let fft;                  
 
 // Resize the canvas and reposition it when the window size changes
 function windowResized() {
@@ -85,6 +86,7 @@ function windowResized() {
 }
 
 // Preload the audio file
+//This technique is from https://p5js.org/reference/p5.sound/loadSound/
 function preload() {
     audio = loadSound('1.mp3');
 }
@@ -118,7 +120,7 @@ function setup() {
         }
     }
 
-    // Create the play button and configure it to toggle audio playback
+    // Create the play button
     button = createButton('PLAY');
     button.mousePressed(togglePlaying);
     //This technique is from https://p5js.org/reference/p5.sound/p5.FFT/
@@ -126,7 +128,7 @@ function setup() {
     audio.loop();              // Set the audio to loop
 }
 
-// Define the Block class for creating block objects
+// Define the Block class to create different types of blocks
 class Block {
     constructor(idx, x, y, width, height) {
         this.idx = idx;
@@ -157,28 +159,31 @@ function drawAllBlocks() {
         rect(blueBlock.x, blueBlock.y, blueBlock.width, blueBlock.height);
     }
     for (let grayBlock of grayBlocks) {
+        let i = grayBlock.idx % 256;
         fill(217, 214, 209);
         noStroke();
         rect(grayBlock.x, grayBlock.y, grayBlock.width, grayBlock.height);
-        fill('white');
-        circle(grayBlock.x + grayBlock.width / 2, grayBlock.y + grayBlock.height / 2, 8);
+
+        // Draw a circle on gray blocks with transparency and size changes
+        fill(0, ampArray[i] + 20, 0, ampArray[i] ** 2);
+        let r = map(ampArray[i], 0, 255, 3, 20);
+        circle(grayBlock.x + grayBlock.width / 2, grayBlock.y + grayBlock.height / 2, r);
     }
 }
 
 // Main draw loop, responsible for background, audio analysis, and drawing blocks
 function draw() {
     background(242, 243, 238); 
-    ampArray = fft.analyze();  
-    drawAllBuildings();    
+    ampArray = fft.analyze(); 
+    drawAllBuildings();        
     drawAllBlocks();           
 }
 
-// Function to draw various buildings at specified positions and colors
+// Function to draw buildings at specified positions and colors
 function drawAllBuildings() {
-    // Draw different buildings at specific locations with specific colors
+    // Draw various buildings at specific positions with specific colors
     drawBuildings(83, 33.90, 48, 18, color(225, 201, 41));
     drawBuildings(92, 21.90, 24, 68, color(175, 57, 43));
-    drawBuildings(92, 52, 24, 13, color(217, 214, 209));
 }
 
 // Helper function to draw a single building
@@ -189,6 +194,7 @@ function drawBuildings(x, y, width, height, color) {
 }
 
 // Function to control audio playback and pause
+//This technique is from https://p5js.org/reference/p5.MediaElement/stop/
 function togglePlaying() {
     if (!audio.isPlaying()) {
         audio.play();
